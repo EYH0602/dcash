@@ -56,31 +56,19 @@ void AuthService::post(HTTPRequest *request, HTTPResponse *response) {
     }
   }
 
-  User *user;
-  // If the username doesn't exist this call will create a new user
-  if (this->m_db->users.count(username) == 0) {
-    #ifdef _TESTING_
-    cout << "Auth a new user." << endl;
-    #endif
-    user = new User();
-    user->username = username;
-    user->password = password;
-    user->balance = 0;
-    user->email = "";
-    user->user_id = string_util.createUserId();
-    this->m_db->users[username] = user;
-    response->setStatus(201);
-  } else {
-    // check if password matches
-    if (this->m_db->users[username]->password != password) {
+  User *user = new User();
+  int rnt = this->m_db->getUser(user, username, password);
+  switch (rnt) {
+    case 0:
+      response->setStatus(201);
+      break;
+    case 2:
       throw ClientError::forbidden();
-    }
-    #ifdef _TESTING_
-    cout << "Auth a existing user." << endl;
-    #endif
-    user = this->m_db->users[username];
+    default:
+      break;
   }
 
+  // login the user
   auth_token = string_util.createAuthToken();
   this->m_db->auth_tokens[auth_token] = user;
 
