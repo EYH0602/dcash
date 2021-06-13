@@ -90,8 +90,22 @@ void Database::addTransfer(Transfer *tr) {
   this->applyQuery(sql);
 }
 
+void Database::addDeposit(Deposit *dp) {
+  string sql = 
+  "INSERT INTO transfers"
+    " (to, amount, stripe_charge_id) "
+  "VALUE"
+    " ('" + dp->to + "', '" + to_string(dp->amount) + "', '" + dp->stripe_charge_id + "')";
+  this->applyQuery(sql);
+}
+
 vector<vector<string>> Database::getTransferHistory(string from) {
   string sql = "SELECT from, to, amount FROM transfers WHERE from = '" + from + "'";
+  return this->applyQuery(sql);
+}
+
+vector<vector<string>> Database::getDepositHistory(string to) {
+  string sql = "SELECT to, amount, stripe_charge_id FROM deposits WHERE from = '" + to + "'";
   return this->applyQuery(sql);
 }
 

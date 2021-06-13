@@ -76,6 +76,7 @@ void TransferService::post(HTTPRequest *request, HTTPResponse *response) {
 
   // save transfer record to db
   this->m_db->addTransfer(tr);
+  delete tr;
 
   // construct response
   Document document;

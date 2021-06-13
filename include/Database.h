@@ -25,8 +25,8 @@ class Transfer {
 class Deposit {
  public:
   std::string to;
-  int amount;
   std::string stripe_charge_id;
+  int amount;
 };
 
 // Note: you must use a single User object and hold pointers to it
@@ -57,6 +57,7 @@ class Database {
   void addTransfer(Transfer *tr);
   void addDeposit(Deposit *dp);
   std::vector<std::vector<std::string>> getTransferHistory(std::string from);
+  std::vector<std::vector<std::string>> getDepositHistory(std::string to);
   ~Database();
 
  private:
