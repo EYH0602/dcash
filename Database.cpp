@@ -8,58 +8,53 @@
 
 using namespace std;
 
-Database::Database(string un, string pwsd, string host, int port, string key) {
+Database::Database(string un, string pwsd, string host, int port, string name, string key) {
   this->stripe_secret_key = key;
 
   // init db
-  mysql_init(this->users);
-  this->users = mysql_real_connect(
-    this->users, host.c_str(), un.c_str(), pwsd.c_str(), "users", port, NULL, 0
+  mysql_init(this->db);
+  this->db = mysql_real_connect(
+    this->db, host.c_str(), un.c_str(), pwsd.c_str(), name.c_str(), port, NULL, 0
   );
-  mysql_init(this->transfers);
-  this->transfers = mysql_real_connect(
-    this->transfers, host.c_str(), un.c_str(), pwsd.c_str(), "transfers", port, NULL, 0
-  );
-  mysql_init(this->deposits);
-  this->deposits = mysql_real_connect(
-    this->deposits, host.c_str(), un.c_str(), pwsd.c_str(), "deposits", port, NULL, 0
-  );
-  if (!(this->users && this->transfers && this->deposits)) {
+  if (!this->db) {
     throw "DB Connection Faild.";
   }
+}
+
+vector<vector<string>> Database::applyQuery(string query) {
+  vector<vector<string>> res;
+  int rnt = mysql_query(this->db, query.c_str());
+  if (rnt != 0) {
+    throw "MySQL Query ERROR: " + to_string(rnt);
+  }
+  MYSQL_RES *rst = mysql_use_result(this->db);
+  MYSQL_ROW sql_row;
+  while (sql_row = mysql_fetch_row(rst), sql_row) {
+    vector<string> row;
+    for (int j = 0; j < mysql_num_fields(rst); j++) {
+      row.push_back(string(sql_row[j]));
+    }
+    res.push_back(row);
+  }
+  mysql_free_result(rst);
+  return res;
 }
 
 int Database::getUser(User *user, string username, string password) {
   string sql = 
     "SELECT user_id, email, balance, password FROM users WHERE"
     " username = '" + username + "'";
-  int sql_rnt = mysql_query(this->users, sql.c_str());
-  int rnt;
-  string user_id;
-  MYSQL_RES* rst;
-  MYSQL_ROW sql_row;
-  vector<vector<string> > rows;
   StringUtils string_util;
-
-  if (sql_rnt != 0) {
-    throw "MySQL Query Error: " + to_string(sql_rnt);
-  }
-  rst = mysql_use_result(this->users);
-  while (sql_row = mysql_fetch_row(rst), sql_row) {
-    vector<string> row;
-    for (int j = 0; j < mysql_num_fields(rst); ++j) {
-      row.push_back(string(sql_row[j]));
-    }
-    rows.push_back(row);
-  } 
-  if (rows.size() > 1) {
+  int rnt;
+  vector<vector<string>> rst = this->applyQuery(sql);
+  if (rst.size() > 1) {
     throw "DB Error: User not unique.";
   }
 
   // down searching
   user->username = username;
   user->password = password;
-  if (rows.size() == 0) {
+  if (rst.size() == 0) {
     rnt = 0;
     user->user_id = string_util.createUserId();
     user->email = "";
@@ -67,15 +62,14 @@ int Database::getUser(User *user, string username, string password) {
     this->addUser(user);
   } else {
     rnt = 1;
-    user->user_id = rows[0][0];
-    user->email = rows[0][1];
-    user->balance = atoi(rows[0][2].c_str());
+    user->user_id = rst[0][0];
+    user->email = rst[0][1];
+    user->balance = atoi(rst[0][2].c_str());
   }
-  if (rows[0][3] != password) {
+  if (rst[0][3] != password) {
     rnt = 2;
   }
 
-  mysql_free_result(rst);
   return rnt;
 }
 
@@ -85,11 +79,34 @@ void Database::addUser(User *user) {
     " (username, password, user_id) "
   "VALUE"
     " ('" + user->username + "', '" + user->password + "', '" + user->user_id + "')";
-  mysql_query(this->users, sql.c_str());
+  this->applyQuery(sql);
+}
+void Database::addTransfer(Transfer *tr) {
+  string sql = 
+  "INSERT INTO transfers"
+    " (from, to, amount) "
+  "VALUE"
+    " ('" + tr->from + "', '" + tr->to+ "', '" + to_string(tr->amount) + "')";
+  this->applyQuery(sql);
 }
 
+vector<vector<string>> Database::getTransferHistory(string from) {
+  string sql = "SELECT from, to, amount FROM transfers WHERE from = '" + from + "'";
+  return this->applyQuery(sql);
+}
+
+bool Database::hasUser(string username) {
+  string sql = "SELECT COUNT(username) FROM users WHERE username = '" + username + "'";
+  vector<vector<string>> rst = this->applyQuery(sql);
+  return rst[0][0] == "1";
+}
+
+int Database::updateBalance(std::string username, int amount) {
+  string sql = "UPDATE users SET balance = balance + 10 WHERE username = 'eeeh'";
+  this->applyQuery(sql);
+}
+
+
 Database::~Database() {
-  mysql_close(this->users);
-  mysql_close(this->transfers);
-  mysql_close(this->deposits);
+  mysql_close(this->db);
 }
