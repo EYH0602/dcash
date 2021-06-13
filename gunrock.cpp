@@ -210,4 +210,5 @@ int main(int argc, char *argv[]) {
     sync_print("client_accepted", "");
     handle_request(client);
   }
+  delete db;
 }

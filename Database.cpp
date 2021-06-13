@@ -12,7 +12,7 @@ Database::Database(string un, string pwsd, string host, int port, string name, s
   this->stripe_secret_key = key;
 
   // init db
-  mysql_init(this->db);
+  this->db = mysql_init(NULL);
   this->db = mysql_real_connect(
     this->db, host.c_str(), un.c_str(), pwsd.c_str(), name.c_str(), port, NULL, 0
   );
