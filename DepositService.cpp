@@ -43,7 +43,7 @@ void DepositService::post(HTTPRequest *request, HTTPResponse *response) {
   vector<string> info_list = string_util.split(request->getBody(), '&');
 
   Deposit *dp = new Deposit();
-  dp->to = user;
+  dp->to = user->username;
   dp->amount = 0;
   dp->stripe_charge_id = "";
   string stripe_token = "";
@@ -101,8 +101,9 @@ void DepositService::post(HTTPRequest *request, HTTPResponse *response) {
   cout << "Stripe Charge ID: " << dp->stripe_charge_id << endl;
   #endif
 
-  this->m_db->deposits.push_back(dp);
-  user->balance += dp->amount;
+  this->m_db->addDeposit(dp);
+  this->m_db->updateBalance(dp->to, dp->amount);
+  delete dp;
 
   // construct response
   Document document;
@@ -116,15 +117,13 @@ void DepositService::post(HTTPRequest *request, HTTPResponse *response) {
   array.SetArray();
 
   // add an object to our array
-  for (Deposit *record: this->m_db->deposits) {
-    if (record->to->username != user->username) {
-      continue;
-    }
+  vector<vector<string>> deposits = this->m_db->getDepositHistory(user->username);
+  for (vector<string> record: deposits) {
     Value to;
     to.SetObject();
     to.AddMember("to", user->username, a);
-    to.AddMember("amount", record->amount, a);
-    to.AddMember("stripe_charge_id", record->stripe_charge_id, a);
+    to.AddMember("amount", record[1], a);
+    to.AddMember("stripe_charge_id", record[2], a);
     array.PushBack(to, a);
   }
   // and add the array to our return object

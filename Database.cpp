@@ -116,8 +116,12 @@ bool Database::hasUser(string username) {
 }
 
 int Database::updateBalance(std::string username, int amount) {
-  string sql = "UPDATE users SET balance = balance + 10 WHERE username = 'eeeh'";
+  string sql = "UPDATE users SET balance = balance + " + to_string(amount) +
+  " WHERE username = '" + username + "'";
   this->applyQuery(sql);
+  sql = "SELECT amount FROM users WHERE username = '" + username + "'";
+  vector<vector<string>> rst = this->applyQuery(sql);
+  return atoi(rst[0][0].c_str());
 }
 
 
