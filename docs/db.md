@@ -27,7 +27,7 @@ This `users` table is to keep record of all the user account information.
 All users will initially be created with empty email and 0 balance.
 
 ```sql
-CREATE TABLE `user` (
+CREATE TABLE `users` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
