@@ -1,18 +1,16 @@
 all: gunrock_web
 
 CC = g++ --std=c++11
-CFLAGS = -g -Werror -Wall -I include -I shared/include -I/usr/local/opt/openssl@1.1/include \
-	-I/usr/local/opt/mysql/include
-LDFLAGS = -L/usr/local/opt/openssl@1.1/lib -lssl -lcrypto -pthread
+CFLAGS = -g -Werror -Wall -I include -I shared/include -I/usr/local/opt/openssl@1.1/include
+LDFLAGS = -L/usr/local/opt/openssl@1.1/lib -lssl -lcrypto -pthread -lmysqlclient
 VPATH = shared
 
 OBJS = gunrock.o MyServerSocket.o MySocket.o HTTPRequest.o HTTPResponse.o http_parser.o HTTP.o HttpService.o HttpUtils.o AccountService.o FileService.o TransferService.o dthread.o WwwFormEncodedDict.o StringUtils.o Base64.o AuthService.o DepositService.o HttpClient.o HTTPClientResponse.o MySslSocket.o Database.o
-OBJS_MYSQL = /usr/local/opt/mysql/lib/*.dylib
 
 -include $(OBJS:.o=.d)
 
 gunrock_web: $(OBJS)
-	$(CC) -o $@ $(CFLAGS) $(OBJS) $(OBJS_MYSQL) $(LDFLAGS)
+	$(CC) -o $@ $(CFLAGS) $(OBJS) $(LDFLAGS)
 
 %.d: %.c
 	@set -e; gcc -MM $(CFLAGS) $< \
