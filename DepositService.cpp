@@ -103,6 +103,7 @@ void DepositService::post(HTTPRequest *request, HTTPResponse *response) {
 
   this->m_db->addDeposit(dp);
   this->m_db->updateBalance(dp->to, dp->amount);
+  user->balance += dp->amount;
   delete dp;
 
   // construct response

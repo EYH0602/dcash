@@ -73,6 +73,7 @@ void TransferService::post(HTTPRequest *request, HTTPResponse *response) {
   // make change in balance for both account (by refence)
   this->m_db->updateBalance(tr->to, tr->amount);
   this->m_db->updateBalance(tr->from, -1*tr->amount);
+  user->balance -= tr->amount;
 
   // save transfer record to db
   this->m_db->addTransfer(tr);
