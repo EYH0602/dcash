@@ -87,7 +87,7 @@ void Database::addUser(User *user) {
 void Database::addTransfer(Transfer *tr) {
   string sql = 
   "INSERT INTO transfers"
-    " (from, to, amount) "
+    " (from, `to`, amount) "
   "VALUE"
     " ('" + tr->from + "', '" + tr->to+ "', '" + to_string(tr->amount) + "')";
   this->applyQuery(sql);
@@ -95,20 +95,20 @@ void Database::addTransfer(Transfer *tr) {
 
 void Database::addDeposit(Deposit *dp) {
   string sql = 
-  "INSERT INTO transfers"
-    " (to, amount, stripe_charge_id) "
+  "INSERT INTO deposits"
+    " (`to`, amount, stripe_charge_id) "
   "VALUE"
     " ('" + dp->to + "', '" + to_string(dp->amount) + "', '" + dp->stripe_charge_id + "')";
   this->applyQuery(sql);
 }
 
 vector<vector<string>> Database::getTransferHistory(string from) {
-  string sql = "SELECT from, to, amount FROM transfers WHERE from = '" + from + "'";
+  string sql = "SELECT from, `to`, amount FROM transfers WHERE from = '" + from + "'";
   return this->applyQuery(sql);
 }
 
 vector<vector<string>> Database::getDepositHistory(string to) {
-  string sql = "SELECT to, amount, stripe_charge_id FROM deposits WHERE from = '" + to + "'";
+  string sql = "SELECT `to`, amount, stripe_charge_id FROM deposits WHERE `to` = '" + to + "'";
   return this->applyQuery(sql);
 }
 
@@ -122,7 +122,7 @@ int Database::updateBalance(std::string username, int amount) {
   string sql = "UPDATE users SET balance = balance + " + to_string(amount) +
   " WHERE username = '" + username + "'";
   this->applyQuery(sql);
-  sql = "SELECT amount FROM users WHERE username = '" + username + "'";
+  sql = "SELECT balance FROM users WHERE username = '" + username + "'";
   vector<vector<string>> rst = this->applyQuery(sql);
   return atoi(rst[0][0].c_str());
 }
