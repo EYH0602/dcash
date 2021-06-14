@@ -28,6 +28,9 @@ vector<vector<string>> Database::applyQuery(string query) {
     throw "MySQL Query ERROR: " + to_string(rnt);
   }
   MYSQL_RES *rst = mysql_use_result(this->db);
+  if (!rst) {
+    return res;
+  }
   MYSQL_ROW sql_row;
   while (sql_row = mysql_fetch_row(rst), sql_row) {
     vector<string> row;
@@ -66,7 +69,7 @@ int Database::getUser(User *user, string username, string password) {
     user->email = rst[0][1];
     user->balance = atoi(rst[0][2].c_str());
   }
-  if (rst[0][3] != password) {
+  if (rnt != 0 && rst[0][3] != password) {
     rnt = 2;
   }
 
