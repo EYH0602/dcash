@@ -54,6 +54,7 @@ class Database {
   int getUser(User *user, std::string username, std::string password);
   bool hasUser(std::string username);
   int updateBalance(std::string username, int amount);
+  void updateEmail(User *user);
   void addTransfer(Transfer *tr);
   void addDeposit(Deposit *dp);
   std::vector<std::vector<std::string>> getTransferHistory(std::string from);

@@ -127,6 +127,12 @@ int Database::updateBalance(std::string username, int amount) {
   return atoi(rst[0][0].c_str());
 }
 
+void Database::updateEmail(User *user) {
+  string sql = "UPDATE users SET email =  '" + user->email + "'"
+  " WHERE username = '" + user->username + "'";
+  this->applyQuery(sql);
+}
+
 
 Database::~Database() {
   mysql_close(this->db);
