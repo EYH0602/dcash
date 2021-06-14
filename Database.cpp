@@ -34,7 +34,7 @@ vector<vector<string>> Database::applyQuery(string query) {
   MYSQL_ROW sql_row;
   while (sql_row = mysql_fetch_row(rst), sql_row) {
     vector<string> row;
-    for (int j = 0; j < mysql_num_fields(rst); j++) {
+    for (size_t j = 0; j < mysql_num_fields(rst); j++) {
       row.push_back(string(sql_row[j]));
     }
     res.push_back(row);
