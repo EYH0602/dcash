@@ -84,11 +84,12 @@ void Database::addUser(User *user) {
     " ('" + user->username + "', '" + user->password + "', '" + user->user_id + "')";
   this->applyQuery(sql);
 }
+
 void Database::addTransfer(Transfer *tr) {
   string sql = 
   "INSERT INTO transfers"
-    " (from, `to`, amount) "
-  "VALUE"
+    " (`from`, `to`, amount) "
+  "VALUES"
     " ('" + tr->from + "', '" + tr->to+ "', '" + to_string(tr->amount) + "')";
   this->applyQuery(sql);
 }
@@ -97,13 +98,13 @@ void Database::addDeposit(Deposit *dp) {
   string sql = 
   "INSERT INTO deposits"
     " (`to`, amount, stripe_charge_id) "
-  "VALUE"
+  "VALUES"
     " ('" + dp->to + "', '" + to_string(dp->amount) + "', '" + dp->stripe_charge_id + "')";
   this->applyQuery(sql);
 }
 
 vector<vector<string>> Database::getTransferHistory(string from) {
-  string sql = "SELECT from, `to`, amount FROM transfers WHERE from = '" + from + "'";
+  string sql = "SELECT `from`, `to`, amount FROM transfers WHERE `from` = '" + from + "'";
   return this->applyQuery(sql);
 }
 
