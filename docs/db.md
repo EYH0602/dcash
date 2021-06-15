@@ -26,7 +26,7 @@ There will be three tables in the DB:
 This `users` table is to keep record of all the user account information.
 All users will initially be created with empty email and 0 balance.
 
-```sql
+```mysql
 CREATE TABLE `users` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE `users` (
 This `transfers` table keeps record of all transfer history.
 Each row is a history record, knowing the sender, receiver, and amount they send.
 
-```sql
+```mysql
 CREATE TABLE `transfers` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `from` varchar(255) NOT NULL,
@@ -80,7 +80,7 @@ According to the API, for each deposit API call,
 there need to exist an additional `stripe_charge_id` representing the credit card
 so that our API server could make API call to Stripe to charge money to the card.
 
-```sql
+```mysql
 CREATE TABLE `deposits` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `to` varchar(255) NOT NULL,
