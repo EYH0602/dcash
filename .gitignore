@@ -36,8 +36,11 @@ submission.zip
 *.out
 *.app
 
+playground
+
 # editor setting files
 .vscode
-playground
-.ccls-cache
+.cache
+compile_commands.json
+
 
