@@ -22,9 +22,9 @@ Database::Database(string un, string pwsd, string host, int port, string name, s
   }
 
   // create tables as needed
-  // this->applyQuery(this->getCreateTableSQL("users"));
-  // this->applyQuery(this->getCreateTableSQL("transfers"));
-  // this->applyQuery(this->getCreateTableSQL("deposits"));
+  this->applyQuery(this->getCreateTableSQL("users"));
+  this->applyQuery(this->getCreateTableSQL("transfers"));
+  this->applyQuery(this->getCreateTableSQL("deposits"));
 }
 
 string Database::getCreateTableSQL(string table_name) {
