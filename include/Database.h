@@ -72,7 +72,7 @@ class Database {
    */
   void addUser(User *user);
   std::vector<std::vector<std::string>> applyQuery(std::string query);
-
+  std::string getCreateTableSQL(std::string table_name);
 };
 
 #endif

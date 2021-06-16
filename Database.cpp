@@ -4,6 +4,7 @@
 #include <string>
 #include <mysql/mysql.h>
 
+#include "ClientError.h"
 #include "StringUtils.h"
 
 using namespace std;
@@ -19,6 +20,45 @@ Database::Database(string un, string pwsd, string host, int port, string name, s
   if (!this->db) {
     throw "DB Connection Faild.";
   }
+
+  // create tables as needed
+  // this->applyQuery(this->getCreateTableSQL("users"));
+  // this->applyQuery(this->getCreateTableSQL("transfers"));
+  // this->applyQuery(this->getCreateTableSQL("deposits"));
+}
+
+string Database::getCreateTableSQL(string table_name) {
+  string sql;
+  if (table_name == "users") {
+    sql = "CREATE TABLE IF NOT EXISTS `users` ("
+          "  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,"
+          "  `username` varchar(255) NOT NULL,"
+          "  `password` varchar(255) NOT NULL,"
+          "  `user_id` varchar(255) NOT NULL COMMENT 'randomized string',"
+          "  `email` varchar(255) NOT NULL DEFAULT '',"
+          "  `balance` bigint(20) NOT NULL DEFAULT 0,"
+          "  PRIMARY KEY (`id`)"
+          ") ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='Account info of users'";
+  } else if (table_name == "transfers") {
+    sql = "CREATE TABLE IF NOT EXISTS `transfers` ("
+          " `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,"
+          " `from` varchar(255) NOT NULL,"
+          " `to` varchar(255) NOT NULL,"
+          " `amount` bigint(20) NOT NULL,"
+          " PRIMARY KEY (`id`)"
+          " ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='Transfer records'";
+  } else if (table_name == "deposits") {
+    sql = "CREATE TABLE IF NOT EXISTS `deposits` ("
+          " `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,"
+          " `to` varchar(255) NOT NULL,"
+          " `amount` bigint(20) NOT NULL,"
+          " `stripe_charge_id` varchar(255) NOT NULL,"
+          " PRIMARY KEY (`id`)"
+          " ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='Deposit records'";
+  } else {
+    throw ClientError::forbidden();
+  }
+  return sql;
 }
 
 vector<vector<string>> Database::applyQuery(string query) {
