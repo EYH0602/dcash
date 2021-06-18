@@ -43,4 +43,6 @@ playground
 .cache
 compile_commands.json
 
+# lsp
+.clangd
 
