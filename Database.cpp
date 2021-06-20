@@ -67,10 +67,16 @@ vector<vector<string>> Database::applyQuery(string query) {
   if (rnt != 0) {
     throw "MySQL Query ERROR: " + to_string(rnt);
   }
+
+  // store the results of this query
   MYSQL_RES *rst = mysql_use_result(this->db);
+  // if there is not return result for this query,
+  // just exist
   if (!rst) {
     return res;
   }
+
+  // fetch the query results
   MYSQL_ROW sql_row;
   while (sql_row = mysql_fetch_row(rst), sql_row) {
     vector<string> row;
@@ -83,7 +89,7 @@ vector<vector<string>> Database::applyQuery(string query) {
   return res;
 }
 
-int Database::getUser(User *user, string username, string password) {
+int Database::loginUser(User *user, string username, string password) {
   string sql = 
     "SELECT user_id, email, balance, password FROM users WHERE"
     " username = '" + username + "'";
@@ -116,6 +122,27 @@ int Database::getUser(User *user, string username, string password) {
   return rnt;
 }
 
+bool Database::hasUser(string username) {
+  string sql = "SELECT COUNT(username) FROM users WHERE username = '" + username + "'";
+  vector<vector<string>> rst = this->applyQuery(sql);
+  return rst[0][0] == "1";
+}
+
+int Database::updateBalance(std::string username, int amount) {
+  string sql = "UPDATE users SET balance = balance + " + to_string(amount) +
+  " WHERE username = '" + username + "'";
+  this->applyQuery(sql);
+  sql = "SELECT balance FROM users WHERE username = '" + username + "'";
+  vector<vector<string>> rst = this->applyQuery(sql);
+  return atoi(rst[0][0].c_str());
+}
+
+void Database::updateEmail(User *user) {
+  string sql = "UPDATE users SET email =  '" + user->email + "'"
+  " WHERE username = '" + user->username + "'";
+  this->applyQuery(sql);
+}
+
 void Database::addUser(User *user) {
   string sql = 
   "INSERT INTO users"
@@ -143,6 +170,11 @@ void Database::addDeposit(Deposit *dp) {
   this->applyQuery(sql);
 }
 
+vector<string> Database::getUserInfo(string username) {
+  string sql = "SELECT * FROM users WHERE `username` = '" + username + "'";
+  return this->applyQuery(sql)[0];
+}
+
 vector<vector<string>> Database::getTransferHistory(string from) {
   string sql = "SELECT `from`, `to`, amount FROM transfers WHERE `from` = '" + from + "'";
   return this->applyQuery(sql);
@@ -153,28 +185,9 @@ vector<vector<string>> Database::getDepositHistory(string to) {
   return this->applyQuery(sql);
 }
 
-bool Database::hasUser(string username) {
-  string sql = "SELECT COUNT(username) FROM users WHERE username = '" + username + "'";
-  vector<vector<string>> rst = this->applyQuery(sql);
-  return rst[0][0] == "1";
-}
-
-int Database::updateBalance(std::string username, int amount) {
-  string sql = "UPDATE users SET balance = balance + " + to_string(amount) +
-  " WHERE username = '" + username + "'";
-  this->applyQuery(sql);
-  sql = "SELECT balance FROM users WHERE username = '" + username + "'";
-  vector<vector<string>> rst = this->applyQuery(sql);
-  return atoi(rst[0][0].c_str());
-}
-
-void Database::updateEmail(User *user) {
-  string sql = "UPDATE users SET email =  '" + user->email + "'"
-  " WHERE username = '" + user->username + "'";
-  this->applyQuery(sql);
-}
-
-
 Database::~Database() {
   mysql_close(this->db);
+  for (auto kv: this->auth_tokens) {
+    delete kv.second;
+  }
 }

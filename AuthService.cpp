@@ -57,7 +57,7 @@ void AuthService::post(HTTPRequest *request, HTTPResponse *response) {
   }
 
   User *user = new User();
-  int rnt = this->m_db->getUser(user, username, password);
+  int rnt = this->m_db->loginUser(user, username, password);
   switch (rnt) {
     case 0:
       response->setStatus(201);
