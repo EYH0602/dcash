@@ -10,6 +10,7 @@ endpoints while you are testing, before you have your client ready.
 
 To support the `dcash` app, you will implement the following [API
 calls](#api-call-specification):
+
 - [POST /auth-tokens](#post-auth-tokens)
 - [DELETE /auth-tokens/{auth_token}](#delete-auth-tokensauth_token)
 - [PUT /users/{user_id}](#put-usersuser_id)
