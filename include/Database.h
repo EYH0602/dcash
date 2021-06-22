@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <mysql/mysql.h>
 
 class User {
  public:
@@ -16,33 +17,66 @@ class User {
 
 class Transfer {
  public:
-  User *from;
-  User *to;
+  std::string from;
+  std::string to;
   int amount;
 };
 
 class Deposit {
  public:
-  User *to;
-  int amount;
+  std::string to;
   std::string stripe_charge_id;
+  int amount;
 };
 
 // Note: you must use a single User object and hold pointers to it
 // in the `users` and `auth_tokens` databases
 class Database {
  public:
-  // the key is the username
-  std::map<std::string, User *> users;
-  // the key is the auth_token
   std::map<std::string, User *> auth_tokens;
-  // A vector of all transfers for all users
-  std::vector<Transfer *> transfers;
-  // A vector of all deposits for all users
-  std::vector<Deposit *> deposits;
-
-  // set by config.json
   std::string stripe_secret_key;
+
+  Database();
+  Database(std::string db_username, std::string db_password, 
+    std::string host, int port, std::string db_name,
+    std::string stripe_secret_key);
+
+  /**
+   * @brief Login a user given account info from HTTP request.
+   * 
+   * @param username Username of the target user.
+   * @param password The user's password to create/varify the user.
+   * @return int status code:
+   *    0 not in db
+   *    1 find the user
+   *    2 user in db but password does not match
+   */
+  int loginUser(User *user, std::string username, std::string password);
+  bool hasUser(std::string username);
+
+  int updateBalance(std::string username, int amount);
+  void updateEmail(User *user);
+
+  void addUser(User *user);
+  void addTransfer(Transfer *tr);
+  void addDeposit(Deposit *dp);
+
+  std::vector<std::string> getUserInfo(std::string username);
+  std::vector<std::vector<std::string>> getTransferHistory(std::string from);
+  std::vector<std::vector<std::string>> getDepositHistory(std::string to);
+  ~Database();
+
+ private:
+  // set by config.json
+  MYSQL *db;
+
+  /**
+   * @brief add the input user to table.
+   * 
+   * @param user the user to be added.
+   */
+  std::vector<std::vector<std::string>> applyQuery(std::string query);
+  std::string getCreateTableSQL(std::string table_name);
 };
 
 #endif

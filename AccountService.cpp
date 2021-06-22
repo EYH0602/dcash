@@ -90,6 +90,7 @@ void AccountService::put(HTTPRequest *request, HTTPResponse *response) {
 
   // try the get the parameter email string
   string email;
+  WwwFormEncodedDict decoder;
   try {
     StringUtils string_util;
     vector<string> info = string_util.split(request->getBody(), '=');
@@ -100,8 +101,9 @@ void AccountService::put(HTTPRequest *request, HTTPResponse *response) {
   } catch (...) {
     throw ClientError::badRequest();
   }
-  user->email = email;
+  user->email = decoder.decode(email);
 
+  this->m_db->updateEmail(user);
   this->writeHTTPResponse(response, user);
 
   #ifdef _TESTING_

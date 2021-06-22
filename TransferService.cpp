@@ -47,8 +47,7 @@ void TransferService::post(HTTPRequest *request, HTTPResponse *response) {
 
   // init a Transfer object for use
   Transfer *tr = new Transfer();
-  tr->to = NULL;
-  tr->from = user;
+  tr->from = user->username;
   tr->amount = 0;
 
   for (string info: info_list) {
@@ -56,27 +55,29 @@ void TransferService::post(HTTPRequest *request, HTTPResponse *response) {
     if (kv[0] == "amount") {
       int amount = atoi(kv[1].c_str());
       // make sure the sender have enough money
-      if (tr->from->balance < amount) {
+      if (user->balance < amount) {
         throw ClientError::badRequest();
       }
       tr->amount = amount;
     } else if (kv[0] == "to") {
       // check if the tr->to is in db
-      if (this->m_db->users.count(kv[1]) == 0) {
+      if (!this->m_db->hasUser(kv[1])) {
         throw ClientError::notFound();
       }
-      tr->to = this->m_db->users[kv[1]];
+      tr->to = kv[1];
     } else {
       throw ClientError::badRequest();
     }
   }
 
   // make change in balance for both account (by refence)
-  tr->to->balance += tr->amount;
-  tr->from->balance -= tr->amount;
+  this->m_db->updateBalance(tr->to, tr->amount);
+  this->m_db->updateBalance(tr->from, -1*tr->amount);
+  user->balance -= tr->amount;
 
   // save transfer record to db
-  this->m_db->transfers.push_back(tr);
+  this->m_db->addTransfer(tr);
+  delete tr;
 
   // construct response
   Document document;
@@ -90,15 +91,13 @@ void TransferService::post(HTTPRequest *request, HTTPResponse *response) {
   array.SetArray();
 
   // add an object to our array
-  for (Transfer *record: this->m_db->transfers) {
-    if (record->from->username != username) {
-      continue;
-    }
+  vector<vector<string> > history = this->m_db->getTransferHistory(user->username);
+  for (vector<string> row: history) {
     Value to;
     to.SetObject();
-    to.AddMember("from", username, a);
-    to.AddMember("to", record->to->username, a);
-    to.AddMember("amount", record->amount, a);
+    to.AddMember("from", row[0], a);
+    to.AddMember("to", row[1], a);
+    to.AddMember("amount", atoi(row[2].c_str()), a);
     array.PushBack(to, a);
   }
   // and add the array to our return object

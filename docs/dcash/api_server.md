@@ -112,6 +112,7 @@ values that it parses.
 ## Helpful utilities
 
 Some helpful utilities include:
+
 - `HttpClient`: a class for making HTTP requests
 - `StringUtils::createUserId()`: A function for creating unique user IDs
 - `StringUtils::createAuthToken()`: A function for creating unique auth tokens

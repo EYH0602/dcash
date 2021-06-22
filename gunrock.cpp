@@ -173,14 +173,6 @@ int main(int argc, char *argv[]) {
   services.push_back(new AccountService());
   services.push_back(new FileService(BASEDIR));
 
-  // Make sure that all services have a pointer to the
-  // database object singleton
-  Database *db = new Database();
-  vector<HttpService *>::iterator iter;
-  for (iter = services.begin(); iter != services.end(); iter++) {
-    (*iter)->m_db = db;
-  }
-
   // parse out config information
   stringstream config;
   int fd = open("config.json", O_RDONLY);
@@ -195,12 +187,28 @@ int main(int argc, char *argv[]) {
   }
   Document d;
   d.Parse(config.str());
-  db->stripe_secret_key = d["stripe_secret_key"].GetString();
+  string stripe_secret_key = d["stripe_secret_key"].GetString();
+  string db_username = d["db_username"].GetString();
+  string db_password = d["db_password"].GetString();
+  string db_name = d["db_name"].GetString();
+  string host = d["host"].GetString();
+  int port = d["port"].GetInt();
   
+  // Make sure that all services have a pointer to the
+  // database object singleton
+  Database *db = new Database(
+    db_username, db_password, host, port, db_name, stripe_secret_key
+  );
+  vector<HttpService *>::iterator iter;
+  for (iter = services.begin(); iter != services.end(); iter++) {
+    (*iter)->m_db = db;
+  }
+
   while(true) {
     sync_print("waiting_to_accept", "");
     client = server->accept();
     sync_print("client_accepted", "");
     handle_request(client);
   }
+  delete db;
 }

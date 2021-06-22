@@ -45,6 +45,7 @@ and issue credit card charges using Stripe to deposit money into a
 user's account.
 
 Detailed documentation:
+
 - [API specification](dcash/api.md)
 - [Server architecture](dcash/api_server.md)
 
@@ -56,6 +57,7 @@ will make to Stripe both from the `dcash` wallet as well as the
 `gunrock` server.
 
 Detailed documentation:
+
 - [Using Stripe](dcash/stripe.md)
 
 ## Part 3: The dcash wallet
@@ -66,5 +68,6 @@ output, and interact with the Stripe and the `gunrock` servers via
 APIs.
 
 Detailed documentation:
+
 - [API specification](dcash/api.md)
 - [Wallet architecture](dcash/wallet.md)
