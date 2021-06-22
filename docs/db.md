@@ -36,7 +36,10 @@ CREATE TABLE `users` (
   `user_id` varchar(255) NOT NULL COMMENT 'randomized string',
   `email` varchar(255) NOT NULL DEFAULT '',
   `balance` bigint(20) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
+  `create_time` timestamp NOT NULL COMMENT 'timestamp when the user is first created',
+  `update_time` timestamp NOT NULL COMMENT 'timestamp when the user info is most recently updated'
+  PRIMARY KEY (`id`), UNIQUE (`user_id`),
+  INDEX (`username`), INDEX (`create_time`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='Account info of users'
 ```
 
@@ -51,7 +54,8 @@ CREATE TABLE `transfers` (
   `from` varchar(255) NOT NULL,
   `to` varchar(255) NOT NULL,
   `amount` bigint(20) NOT NULL,
-  PRIMARY KEY (`id`)
+  `create_time` timestamp NOT NULL COMMENT 'timestamp when the transfer was made',
+  PRIMARY KEY (`id`), INDEX (`from`), INDEX (`create_time`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='Transfer records'
 ```
 
@@ -88,6 +92,7 @@ CREATE TABLE `deposits` (
   `to` varchar(255) NOT NULL,
   `amount` bigint(20) NOT NULL,
   `stripe_charge_id` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`)
+  `create_time` timestamp NOT NULL COMMENT 'timestamp when the deposit was made',
+  PRIMARY KEY (`id`), INDEX (`to`), INDEX (`create_time`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='Deposit records'
 ```
