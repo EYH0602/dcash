@@ -37,7 +37,9 @@ string Database::getCreateTableSQL(string table_name) {
           "  `user_id` varchar(255) NOT NULL COMMENT 'randomized string',"
           "  `email` varchar(255) NOT NULL DEFAULT '',"
           "  `balance` bigint(20) NOT NULL DEFAULT 0,"
-          "  PRIMARY KEY (`id`)"
+          "  `create_time` timestamp NOT NULL COMMENT 'timestamp when the user was first created',"
+          "  `update_time` timestamp NOT NULL COMMENT 'timestamp when the user info is most recently updated',"
+          "  PRIMARY KEY (`id`), INDEX(`username`), INDEX(`create_time`)"
           ") ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='Account info of users'";
   } else if (table_name == "transfers") {
     sql = "CREATE TABLE IF NOT EXISTS `transfers` ("
@@ -45,7 +47,8 @@ string Database::getCreateTableSQL(string table_name) {
           " `from` varchar(255) NOT NULL,"
           " `to` varchar(255) NOT NULL,"
           " `amount` bigint(20) NOT NULL,"
-          " PRIMARY KEY (`id`)"
+          " `create_time` timestamp NOT NULL COMMENT 'timestamp when the transfer was made',"
+          " PRIMARY KEY (`id`), INDEX(`from`), INDEX(`create_time`)"
           " ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='Transfer records'";
   } else if (table_name == "deposits") {
     sql = "CREATE TABLE IF NOT EXISTS `deposits` ("
@@ -53,7 +56,8 @@ string Database::getCreateTableSQL(string table_name) {
           " `to` varchar(255) NOT NULL,"
           " `amount` bigint(20) NOT NULL,"
           " `stripe_charge_id` varchar(255) NOT NULL,"
-          " PRIMARY KEY (`id`)"
+          " `create_time` timestamp NOT NULL COMMENT 'timestamp when the deposit was made',"
+          " PRIMARY KEY (`id`), INDEX(`to`), index(`create_time`)"
           " ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='Deposit records'";
   } else {
     throw ClientError::forbidden();

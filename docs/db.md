@@ -6,7 +6,7 @@ However, the origional design had some problems:
 
 * The server does not save the data. When it is shut down, all the data are gone.
 * There is no simple to interact with other platform and business.
-  * For example, we may need to send data to HIVE and consumers.
+    * For example, we may need to send data to HIVE and consumers.
 
 ## Dcash API Server Data-structure
 
@@ -36,8 +36,8 @@ CREATE TABLE `users` (
   `user_id` varchar(255) NOT NULL COMMENT 'randomized string',
   `email` varchar(255) NOT NULL DEFAULT '',
   `balance` bigint(20) NOT NULL DEFAULT 0,
-  `create_time` timestamp NOT NULL COMMENT 'timestamp when the user is first created',
-  `update_time` timestamp NOT NULL COMMENT 'timestamp when the user info is most recently updated'
+  `create_time` timestamp NOT NULL COMMENT 'timestamp when the user was first created',
+  `update_time` timestamp NOT NULL COMMENT 'timestamp when the user info is most recently updated',
   PRIMARY KEY (`id`), UNIQUE (`user_id`),
   INDEX (`username`), INDEX (`create_time`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='Account info of users'
