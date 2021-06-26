@@ -70,6 +70,9 @@ class Database {
   // set by config.json
   MYSQL *db;
 
+  // YYYY-MM-DD HH:mm:ss SQL standard timestamp
+  std::string getCurrentTimestamp();
+
   /**
    * @brief add the input user to table.
    * 

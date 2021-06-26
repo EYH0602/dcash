@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <string>
+#include <stdio.h>
+#include <time.h>
 #include <mysql/mysql.h>
 
 #include "ClientError.h"
@@ -37,7 +39,9 @@ string Database::getCreateTableSQL(string table_name) {
           "  `user_id` varchar(255) NOT NULL COMMENT 'randomized string',"
           "  `email` varchar(255) NOT NULL DEFAULT '',"
           "  `balance` bigint(20) NOT NULL DEFAULT 0,"
-          "  PRIMARY KEY (`id`)"
+          "  `create_time` timestamp NOT NULL COMMENT 'timestamp when the user was first created',"
+          "  `update_time` timestamp NOT NULL COMMENT 'timestamp when the user info is most recently updated',"
+          "  PRIMARY KEY (`id`), INDEX(`username`), INDEX(`create_time`)"
           ") ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='Account info of users'";
   } else if (table_name == "transfers") {
     sql = "CREATE TABLE IF NOT EXISTS `transfers` ("
@@ -45,7 +49,8 @@ string Database::getCreateTableSQL(string table_name) {
           " `from` varchar(255) NOT NULL,"
           " `to` varchar(255) NOT NULL,"
           " `amount` bigint(20) NOT NULL,"
-          " PRIMARY KEY (`id`)"
+          " `create_time` timestamp NOT NULL COMMENT 'timestamp when the transfer was made',"
+          " PRIMARY KEY (`id`), INDEX(`from`), INDEX(`create_time`)"
           " ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='Transfer records'";
   } else if (table_name == "deposits") {
     sql = "CREATE TABLE IF NOT EXISTS `deposits` ("
@@ -53,7 +58,8 @@ string Database::getCreateTableSQL(string table_name) {
           " `to` varchar(255) NOT NULL,"
           " `amount` bigint(20) NOT NULL,"
           " `stripe_charge_id` varchar(255) NOT NULL,"
-          " PRIMARY KEY (`id`)"
+          " `create_time` timestamp NOT NULL COMMENT 'timestamp when the deposit was made',"
+          " PRIMARY KEY (`id`), INDEX(`to`), index(`create_time`)"
           " ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='Deposit records'";
   } else {
     throw ClientError::forbidden();
@@ -129,7 +135,11 @@ bool Database::hasUser(string username) {
 }
 
 int Database::updateBalance(std::string username, int amount) {
-  string sql = "UPDATE users SET balance = balance + " + to_string(amount) +
+  string time = this->getCurrentTimestamp();
+  string sql =
+  "UPDATE users SET"
+  " update_time = '" + time + "',"
+  " balance = balance + " + to_string(amount) +
   " WHERE username = '" + username + "'";
   this->applyQuery(sql);
   sql = "SELECT balance FROM users WHERE username = '" + username + "'";
@@ -138,35 +148,42 @@ int Database::updateBalance(std::string username, int amount) {
 }
 
 void Database::updateEmail(User *user) {
-  string sql = "UPDATE users SET email =  '" + user->email + "'"
+  string sql =
+  "UPDATE users SET"
+  " email =  '" + user->email + "', "
+  " update_time = '" + this->getCurrentTimestamp() + "'"
   " WHERE username = '" + user->username + "'";
   this->applyQuery(sql);
 }
 
 void Database::addUser(User *user) {
+  string time = this->getCurrentTimestamp();
   string sql = 
   "INSERT INTO users"
-    " (username, password, user_id) "
-  "VALUE"
-    " ('" + user->username + "', '" + user->password + "', '" + user->user_id + "')";
+    " (username, password, user_id, create_time, update_time) "
+  "VALUES"
+    " ('" + user->username + "', '" + user->password + "', '" + user->user_id + "', '"
+    + time + "', '" + time+ "')";
   this->applyQuery(sql);
 }
 
 void Database::addTransfer(Transfer *tr) {
+  string time = this->getCurrentTimestamp();
   string sql = 
   "INSERT INTO transfers"
-    " (`from`, `to`, amount) "
+    " (`from`, `to`, amount, create_time) "
   "VALUES"
-    " ('" + tr->from + "', '" + tr->to+ "', '" + to_string(tr->amount) + "')";
+    " ('" + tr->from + "', '" + tr->to+ "', '" + to_string(tr->amount) + "', '" + time + "')";
   this->applyQuery(sql);
 }
 
 void Database::addDeposit(Deposit *dp) {
+  string time = this->getCurrentTimestamp();
   string sql = 
   "INSERT INTO deposits"
-    " (`to`, amount, stripe_charge_id) "
+    " (`to`, amount, stripe_charge_id, create_time) "
   "VALUES"
-    " ('" + dp->to + "', '" + to_string(dp->amount) + "', '" + dp->stripe_charge_id + "')";
+    " ('" + dp->to + "', '" + to_string(dp->amount) + "', '" + dp->stripe_charge_id + "', '" + time + "')";
   this->applyQuery(sql);
 }
 
@@ -183,6 +200,18 @@ vector<vector<string>> Database::getTransferHistory(string from) {
 vector<vector<string>> Database::getDepositHistory(string to) {
   string sql = "SELECT `to`, amount, stripe_charge_id FROM deposits WHERE `to` = '" + to + "'";
   return this->applyQuery(sql);
+}
+
+string Database::getCurrentTimestamp() {
+  time_t now = time(0);
+  struct tm tstruct;
+  char buf[80];
+  tstruct = *localtime(&now);
+  // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+  // for more information about date/time format
+  strftime(buf, sizeof(buf), "%Y-%m-%d %X", &tstruct);
+
+  return string(buf);
 }
 
 Database::~Database() {
