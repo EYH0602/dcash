@@ -26,6 +26,7 @@
 #include "MySocket.h"
 #include "MyServerSocket.h"
 #include "dthread.h"
+#include "RequestQueue.h"
 
 #include "rapidjson/document.h"
 
@@ -38,6 +39,7 @@ int BUFFER_SIZE = 1;
 string BASEDIR = "static";
 string SCHEDALG = "FIFO";
 string LOGFILE = "/dev/null";
+RequestQueue *req_queue;
 
 vector<HttpService *> services;
 
@@ -128,6 +130,25 @@ void handle_request(MySocket *client) {
   delete client;
 }
 
+/**
+ * Helper function for handle_request.
+ * Keep a worker thread alive unless the server is shut down.
+ * @param None
+ * @return NULL
+ */
+void* handle_thread(void* arg) {
+  while (true) {
+    MySocket* client = req_queue->dequeue();
+    if (client) {
+      #ifdef _DEBUG_SHOW_STEP_
+      cout << "ready to handle request" << endl;
+      #endif
+      handle_request(client);
+    }
+  }
+  return NULL;
+}
+
 int main(int argc, char *argv[]) {
 
   signal(SIGPIPE, SIG_IGN);
@@ -204,11 +225,24 @@ int main(int argc, char *argv[]) {
     (*iter)->m_db = db;
   }
 
+  // init request queue for multi-threading concurrency
+  req_queue = new RequestQueue(THREAD_POOL_SIZE);
+  // when the server is first started
+  // the master thread creates a fixed-size pool of worker threads
+  pthread_t thread_pool[THREAD_POOL_SIZE];
+  for (int idx = 0; idx < THREAD_POOL_SIZE; idx++) {
+    dthread_create(&thread_pool[idx], NULL, handle_thread, NULL);
+  }
+
   while(true) {
     sync_print("waiting_to_accept", "");
     client = server->accept();
     sync_print("client_accepted", "");
-    handle_request(client);
+    // place the connection descriptor into a fixed-size buffer 
+    // and return to accepting more connections.
+    req_queue->enqueue(client);
   }
+
   delete db;
+  delete req_queue;
 }
