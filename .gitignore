@@ -45,4 +45,5 @@ compile_commands.json
 
 # lsp
 .clangd
+wallet.py
 
