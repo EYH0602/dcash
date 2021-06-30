@@ -276,7 +276,7 @@ void logout(HttpClient *client) {
     exit(0);
   }
 
-  string path = "/auth-tokens/" + user_id;
+  string path = "/auth-tokens/" + auth_token;
   client->set_header("x-auth-token", auth_token);
   HTTPClientResponse *client_response = client->del(path);
   delete client_response;
