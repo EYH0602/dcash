@@ -1,9 +1,9 @@
 all: dcash
 
 CC = g++
-CFLAGS = -g -Werror -Wall -I/usr/local/opt/openssl@1.1/include -I ../../include -I ../../shared/include
+CFLAGS = -g -Werror -Wall -I/usr/local/opt/openssl@1.1/include -I ../include -I ../shared/include
 LDFLAGS = -L/usr/local/opt/openssl@1.1/lib -lssl -lcrypto -pthread
-VPATH = ../../shared
+VPATH = ../shared
 
 OBJS = wallet.o MySocket.o HTTPClientResponse.o HttpClient.o MySslSocket.o WwwFormEncodedDict.o Base64.o StringUtils.o
 
