@@ -73,6 +73,10 @@ void invoke_service_method(HttpService *service, HTTPRequest *request, HTTPRespo
       service->post(request, response);
     } else if (request->isDelete()) {
       service->del(request, response);
+    } else if (request->isOptions()) {
+      // tell the browser 'x-auth-token' header is allowed
+      response->setHeader("Access-Control-Allow-Methods", "*");
+      response->setHeader("Access-Control-Allow-Headers", "x-auth-token");
     } else {
       // The server doesn't know about this method
       response->setStatus(501);
