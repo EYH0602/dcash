@@ -39,10 +39,12 @@ submission.zip
 playground
 
 # editor setting files
+.DS_store
 .vscode
 .cache
 compile_commands.json
 
 # lsp
 .clangd
+wallet.py
 

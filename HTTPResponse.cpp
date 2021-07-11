@@ -46,6 +46,7 @@ string HTTPResponse::statusToString() {
 string HTTPResponse::response() {
   stringstream out;
   setHeader("Content-Type", contentType);
+  setHeader("Access-Control-Allow-Origin", "*");
   if (streaming) {
     setHeader("Transfer-Encoding", "chunked");
   } else {
