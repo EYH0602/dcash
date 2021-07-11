@@ -293,6 +293,8 @@ string HTTP::getProxyRequest(const char *userAgent)
         reply = "POST " + urlPathQuery + " HTTP/1.1\r\n";
     } else if(m_method == HTTP_HEAD) {
         reply = "HEAD " + urlPathQuery + " HTTP/1.1\r\n";
+    } else if (m_method == HTTP_OPTIONS) {
+        reply = "OPTIONS " + urlPathQuery + " HTTP/1.1\r\n";
     } else {
         assert(false);
     }
@@ -388,7 +390,7 @@ void HTTP::appendHeaderValue(const char *at, size_t len)
 void HTTP::messageComplete(unsigned char method)
 {
     if(m_httpType == HTTP_REQUEST) {
-      assert((method == HTTP_GET) || (method == HTTP_CONNECT) || (method == HTTP_POST) || (method == HTTP_HEAD) || (method == HTTP_PUT) || (method == HTTP_DELETE));
+      assert((method == HTTP_GET) || (method == HTTP_CONNECT) || (method == HTTP_POST) || (method == HTTP_HEAD) || (method == HTTP_PUT) || (method == HTTP_DELETE) || (method == HTTP_OPTIONS));
         m_method = method;
     }
     m_doneParsing = true;
